@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // ⬅ added useLocation
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
@@ -11,7 +11,12 @@ const Login = () => {
   const [user, setUser] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // If the user came from another page, redirect there; otherwise default to home
+  const from = location.state?.from?.pathname || "/";
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -24,7 +29,9 @@ const Login = () => {
       const res = await axios.post(`${API_URL}/auth/login`, user);
       localStorage.setItem("token", res.data.token);
       alert(res.data.message);
-      navigate("/");
+
+      // Redirect back to the previous page
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }

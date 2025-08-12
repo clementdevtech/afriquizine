@@ -7,7 +7,13 @@
 .nav-container {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; /* makes both sides align vertically */
+}
+
+.nav-side {
+  display: flex;
+  align-items: center; /* ensures children line up */
+  gap: 20px;
 }
 
 .nav-logo {
@@ -24,8 +30,11 @@
 
 .nav-links {
   display: flex;
+  align-items: center; /* keeps icons & text level */
   gap: 20px;
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-links a,
@@ -38,6 +47,7 @@
   background: none;
   border: none;
   cursor: pointer;
+  padding: 4px 6px; /* same vertical height for consistency */
 }
 
 .nav-links a.active {
@@ -61,6 +71,7 @@
 .nav-side {
   display: flex;
   gap: 10px;
+  align-items: center; /* keeps vertical alignment */
 }
 
 .nav-center {
@@ -78,7 +89,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 11px; /* smaller text */
+  font-size: 11px;
   color: white;
   text-decoration: none;
   background: none;
@@ -86,7 +97,7 @@
 }
 
 .nav-side svg {
-  font-size: 16px; /* smaller icons */
+  font-size: 16px;
 }
 
 .nav-side a.active {
@@ -102,6 +113,6 @@
     display: flex;
   }
   .nav-center img {
-    height: 28px; /* final logo height for small devices */
+    height: 28px;
   }
 }
