@@ -56,7 +56,7 @@ app.use('/api/testimonials', testimonialsRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/bookings', bookingRoutes);
+app.use('/api/booking', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use("/api/menu", menuRoutes);
