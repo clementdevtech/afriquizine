@@ -36,7 +36,7 @@ const AboutUs = () => {
           📍 <strong>Adelaide, Australia</strong> — providing premium catering and equipment hire for all occasions.
         </p>
         <p>
-          📍 <strong>Gatundu South, Nairobi, Kenya</strong> — delivering top-tier catering and event services.
+          📍 <strong>Nairobi, Kenya</strong> — delivering top-tier catering and event services.
         </p>
       </section>
 
