@@ -1,0 +1,116 @@
+.register-container {
+  max-width: 600px;
+  top: 10vw;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10vw;
+  }
+  
+  .row{
+    display: flex;
+    flex-direction: row;
+}
+.col-md-4{
+    display: flex;
+    flex-direction: column;
+}
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .icon{
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    color: #333;
+    z-index: 1000;
+  }
+  
+  .input-group input {
+    flex: 1;
+    padding-right: 40px;
+  }
+  
+  .input-group button {
+    position: absolute;
+    right: 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    border-radius: 5px;
+  }
+  
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-top: 10px;
+  }
+  
+  .btn-primary {
+    background-color: #28a745;
+    border: none;
+  }
+  
+  .btn-secondary {
+    background-color: #6c757d;
+  }
+  
+  .btn-primary:hover {
+    background-color: #218838;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+  
+  .text-danger {
+    color: red;
+    text-align: center;
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+    input {
+      padding: 8px;
+    }
+    .btn-primary, .btn-secondary {
+      font-size: 14px;
+    }
+  }

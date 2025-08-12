@@ -1,0 +1,249 @@
+/* Global Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: #f8f9fa;
+}
+
+
+/* Hero Section */
+.hero {
+  background: url('../images/background.jpeg') no-repeat center;
+  background-size: cover;
+  color: white;
+  text-align: center;
+  padding: 100px 20px;
+  animation: fadeIn 2s ease-in-out;
+}
+.screen {
+  text-align: center;
+  padding: 100px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+
+/* Gallery Section */
+.gallery-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+
+.gallery-item {
+  width: 100%;
+  max-width: 350px; 
+  height: auto; 
+  text-align: center; 
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 250px; 
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: opacity 2s ease-in-out;
+}
+
+/* Style the category text */
+.gallery-item .description {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 5px;
+  border-radius: 5px;
+  display: inline-block;
+}
+
+/* Full-Screen Image Viewer */
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.fullscreen-image {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+}
+
+/* Image Transition */
+.fade-out {
+  opacity: 0;
+  transition: opacity 2s ease-in-out;
+}
+.fade-in {
+  opacity: 1;
+  transition: opacity 2s ease-in-out;
+}
+
+
+/* Reviews Section */
+.reviews-section {
+  background: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+.review-list p {
+  font-style: italic;
+  color: #6c757d;
+}
+
+/* Booking Section */
+.booking-section {
+  background: #fff;
+  padding: 40px;
+}
+.booking-container {
+  max-width: 600px;
+  margin: auto;
+  text-align: center;
+}
+.booking-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+.booking-form label {
+  font-weight: bold;
+  text-align: left;
+  display: block;
+  margin-top: 10px;
+}
+.booking-form input,
+.booking-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+.booking-form button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  width: 100%;
+  margin-top: 15px;
+}
+.booking-form button:hover {
+  background-color: #0056b3;
+}
+
+/* Footer Styling */
+.footer {
+  background: #222;
+  color: white;
+  text-align: center;
+  padding: 1px;
+  width: 100%;
+  height: auto;
+  position: relative;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Footer Links */
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.footer-links a {
+  color: #f8d210;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+/* Social Media Links */
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.social-links a {
+  color: white;
+  font-size: 20px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.social-links a:hover {
+  transform: scale(1.2);
+  color: #f8d210;
+}
+
+/* Copyright */
+.copyright {
+  font-size: 12px;
+  margin-top: 10px;
+  opacity: 0.8;
+  bottom: 0;
+}
+
+/* Smooth Fade-in Animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .hero {
+    padding: 50px 10px;
+  }
+  .screen {
+    padding: 50px 10px;
+  }
+  .row {
+    flex-direction: column;
+  }
+
+  .footer {
+    padding: 20px;
+  }
+
+  .footer-links {
+    gap: 8px;
+  }
+
+  .social-links {
+    gap: 10px;
+  }
+
+  .social-links a {
+    font-size: 18px;
+  }
+}

@@ -1,0 +1,113 @@
+/* Admin Page Styles */
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    font-family: "Arial", sans-serif;
+  }
+  
+  /* Headings */
+  h2, h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  /* Tables */
+  .table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .table th {
+    background: #007bff;
+    color: white;
+    padding: 12px;
+    text-align: left;
+  }
+  
+  .table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Buttons */
+  button {
+    border: none;
+    padding: 8px 12px;
+    margin: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    border-radius: 5px;
+  }
+  
+  button:hover {
+    opacity: 0.8;
+  }
+  
+  .btn-danger {
+    background: #dc3545;
+    color: white;
+  }
+  
+  .btn-success {
+    background: #28a745;
+    color: white;
+  }
+  
+  .btn-primary {
+    background: #007bff;
+    color: white;
+  }
+  
+  /* Images */
+  img {
+    border-radius: 5px;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  img:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Availability Section */
+  .availability {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .form-check {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .btn-update {
+    background: #007bff;
+    color: white;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 16px;
+  }
+  
+  /* Responsive Design */
+  @media screen and (max-width: 768px) {
+    .container {
+      padding: 10px;
+    }
+  
+    .table {
+      font-size: 14px;
+    }
+  
+    .btn-update {
+      font-size: 14px;
+    }
+  }
+  
