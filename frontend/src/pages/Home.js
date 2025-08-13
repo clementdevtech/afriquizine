@@ -85,7 +85,7 @@ const Home = () => {
     return (
       <div key={category} className="gallery-item text-center">
         <img
-          src={require(`../assets/images/${currentImage.image_url}`)} 
+          src={`/uploads/${currentImage.image_url}`} 
           alt={category}
           className={`fade-in`}
           onLoad={(e) => {

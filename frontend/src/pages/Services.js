@@ -90,7 +90,7 @@ const Services = () => {
                   <div className="card shadow-sm h-100">
                     {item.image && (
                       <img
-                        src={item.image}
+                        src={`/uploads/${item.image}`}
                         className="card-img-top"
                         alt={item.name}
                         style={{ height: '200px', objectFit: 'cover' }}

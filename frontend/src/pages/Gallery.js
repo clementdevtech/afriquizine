@@ -53,7 +53,7 @@ const Gallery = () => {
           });
           return newIndexes;
         });
-      }, 5000); // Change images every 5 seconds independently per category
+      }, 5000);
 
       return () => clearInterval(interval);
     }
@@ -69,7 +69,7 @@ const Gallery = () => {
             filteredImages.map((img) => (
               <div key={img.id} className="gallery-item text-center">
                 <img
-                  src={require(`../assets/images/${img.image_url}`)} // ✅ Same logic as Home.js
+                  src={`/uploads/${img.image_url}`}
                   alt={`Gallery ${img.id}`}
                   className="img-fluid rounded shadow fade-in"
                   onClick={() => setFullScreenImage(img.image_url)}
@@ -87,7 +87,7 @@ const Gallery = () => {
             return (
               <div key={cat} className="gallery-item text-center">
                 <img
-                  src={require(`../assets/images/${currentImage.image_url}`)} 
+                  src={`/uploads/${currentImage.image_url}`} 
                   alt={cat}
                   className="img-fluid rounded shadow fade-in"
                   style={{ cursor: "pointer" }}
@@ -105,7 +105,7 @@ const Gallery = () => {
       {/* Full-Screen Image Viewer */}
       {fullScreenImage && (
         <div className="fullscreen-overlay" onClick={() => setFullScreenImage(null)}>
-          <img src={require(`../assets/images/${fullScreenImage}`)} alt="Full View" className="fullscreen-image" />
+          <img src={`/uploads/${fullScreenImage}`} alt="Full View" className="fullscreen-image" />
         </div>
       )}
     </div>

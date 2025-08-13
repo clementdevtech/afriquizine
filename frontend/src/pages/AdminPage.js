@@ -19,6 +19,7 @@ const AdminPage = () => {
   const [error, setError] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [showCategoryForm, setShowCategoryForm] = useState(false);
+  
 
 
   // Menu states
@@ -295,7 +296,7 @@ const fetchReviews = useCallback(async () => {
         <tbody>
           {images.map((img) => (
             <tr key={img.id}>
-              <td>{img.filename ? (<img src={require(`../assets/images/${img.filename}`)} alt={img.category || "Gallery item"} width="100" />) : (<span>No Image</span>)}</td>
+              <td>{img.filename ? (<img src={`/uploads/${img.image_url}`} alt={img.category || "Gallery item"} width="100" />) : (<span>No Image</span>)}</td>
               <td>{img.category}</td>
               <td><Button variant="danger" onClick={() => handleDeleteImage(img.id)}>Delete</Button></td>
             </tr>
@@ -420,7 +421,7 @@ const fetchReviews = useCallback(async () => {
         <td>
           {item.image_url && (
             <img
-              src={`${API_URL}${item.image_url}`}
+              src={`/uploads/${item.image_url}`}
               alt={item.name}
               width="80"
               style={{ borderRadius: "6px" }}

@@ -5,7 +5,7 @@ const {pool, db} = require("../db");
 // Configure storage for uploaded images
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../../frontend/src/assets/images")); 
+    cb(null, path.join(__dirname, "../../frontend/public/uploads")); 
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname)); 
@@ -47,14 +47,16 @@ const getImages = async (req, res) => {
 // Delete image
 const deleteImage = async (req, res) => {
   const { id } = req.params;
+  console.log("Deleting image with ID:", id);
   try {
     const result = await pool.query("SELECT image_url FROM gallery WHERE id = $1", [id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Image not found" });
     }
 
-    const filename = result.rows[0].filename;
-    const filePath = path.join(__dirname, "../public/images", filename);
+    const filename = result.rows[0].image_url;
+    const filePath = path.join(__dirname, "../../frontend/public/uploads", filename);
+
 
    
     if (fs.existsSync(filePath)) {
