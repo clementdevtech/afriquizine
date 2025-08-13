@@ -1,19 +1,73 @@
-/* ===== Desktop Navbar ===== */
-.desktop-navbar {
-  background: #111;
-  padding: 8px 20px;
+/* ===== Global Reset ===== */
+* {
+  box-sizing: border-box;
 }
 
+a,
+button {
+  transition: color 0.2s ease-in-out, background 0.2s ease-in-out;
+}
+
+/* ===== Shared Styles ===== */
 .nav-container {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* makes both sides align vertically */
+  align-items: center;
 }
 
 .nav-side {
   display: flex;
-  align-items: center; /* ensures children line up */
+  align-items: center;
   gap: 20px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a,
+.logout-btn,
+.nav-side a,
+.nav-btn {
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+}
+
+.nav-links a.active,
+.nav-side a.active {
+  color: orange;
+}
+
+.nav-links a:hover,
+.logout-btn:hover,
+.nav-side a:hover,
+.nav-btn:hover {
+  color: orange;
+}
+
+.nav-links a svg,
+.nav-side svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ===== Desktop Navbar ===== */
+.desktop-navbar {
+  background: #111;
+  padding: 8px 20px;
 }
 
 .nav-logo {
@@ -28,50 +82,13 @@
   height: 40px;
 }
 
-.nav-links {
-  display: flex;
-  align-items: center; /* keeps icons & text level */
-  gap: 20px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-links a,
-.logout-btn {
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 6px; /* same vertical height for consistency */
-}
-
-.nav-links a.active {
-  color: orange;
-}
-
-.nav-links a:hover,
-.logout-btn:hover {
-  color: orange;
-}
-
-/* ===== Mobile Split Navbar ===== */
+/* ===== Mobile Navbar ===== */
 .mobile-navbar {
   display: none;
   background: #111;
   padding: 6px 10px;
   justify-content: space-between;
   align-items: center;
-}
-
-.nav-side {
-  display: flex;
-  gap: 10px;
-  align-items: center; /* keeps vertical alignment */
 }
 
 .nav-center {
@@ -81,30 +98,21 @@
 }
 
 .nav-logo-mobile {
-  height: 30px; /* smaller for mobile */
+  height: 30px;
 }
 
 .nav-side a,
 .nav-btn {
-  display: flex;
   flex-direction: column;
-  align-items: center;
   font-size: 11px;
-  color: white;
-  text-decoration: none;
-  background: none;
-  border: none;
+  padding: 6px 8px; /* bigger tap area for mobile */
 }
 
 .nav-side svg {
   font-size: 16px;
 }
 
-.nav-side a.active {
-  color: orange;
-}
-
-/* ===== Show/Hide Based on Screen Size ===== */
+/* ===== Responsive Breakpoints ===== */
 @media (max-width: 768px) {
   .desktop-navbar {
     display: none;
@@ -114,5 +122,22 @@
   }
   .nav-center img {
     height: 28px;
+  }
+}
+
+@media (min-width: 992px) {
+  .desktop-navbar .nav-links li a {
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+  }
+
+  .desktop-navbar .nav-links li {
+    margin-right: 1rem;
+  }
+
+  .desktop-navbar .nav-links li a svg {
+    font-size: 1.2rem;
+    margin-right: 0.4rem;
   }
 }

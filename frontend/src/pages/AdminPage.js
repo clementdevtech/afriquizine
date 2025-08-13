@@ -17,6 +17,9 @@ const AdminPage = () => {
   const [dates, setDates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [newCategory, setNewCategory] = useState("");
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+
 
   // Menu states
   const [menuItems, setMenuItems] = useState([]);
@@ -75,19 +78,23 @@ const AdminPage = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   // ================= REVIEWS =================
-  const fetchReviews = useCallback(async () => {
-    try {
-      const res = await axios.get(`${API_URL}/testimonials/gettestimonials`);
-      setReviews(res.data);
-    } catch (err) {
-      console.error("Error fetching reviews:", err.message);
-    }
-  }, []);
+const fetchReviews = useCallback(async () => {
+  try {
+    const res = await axios.get(`${API_URL}/testimonials/gettestimonials`);
+    // If backend wraps the array in a "testimonials" field:
+    const dataArray = Array.isArray(res.data) ? res.data : res.data.testimonials;
+    setReviews(dataArray || []); // always an array
+  } catch (err) {
+    console.error("Error fetching reviews:", err.message);
+    setReviews([]); // prevent crash if error
+  }
+}, []);
+
 
   // ================= BOOKINGS =================
   const fetchBookings = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/bookings`);
+      const res = await axios.get(`${API_URL}/booking`);
       setBookings(res.data.bookings || []);
     } catch (err) {
       console.error("Error fetching bookings:", err.message);
@@ -96,7 +103,7 @@ const AdminPage = () => {
 
   const handleRespondBooking = async (id, status, email) => {
     try {
-      await axios.put(`${API_URL}/bookings/${id}`, {
+      await axios.put(`${API_URL}/booking/${id}`, {
         status,
         email,
         message: message.text || "No message from admin.",
@@ -166,7 +173,7 @@ const AdminPage = () => {
     try {
       const [itemsRes, catsRes] = await Promise.all([
         axios.get(`${API_URL}/menu`),
-        axios.get(`${API_URL}/menu/categories`),
+        axios.get(`${API_URL}/menu-categories`),
       ]);
       setMenuItems(itemsRes.data);
       setMenuCategories(catsRes.data);
@@ -174,6 +181,27 @@ const AdminPage = () => {
       console.error("Error fetching menu:", err.message);
     }
   }, []);
+
+
+  const handleAddCategory = async (e) => {
+  e.preventDefault();
+  if (!newCategory.trim()) {
+    alert("Category name cannot be empty.");
+    return;
+  }
+  try {
+    await axios.post(`${API_URL}/menu-categories`, { name: newCategory });
+    alert("Category added successfully!");
+    setNewCategory("");
+    fetchMenuData(); // Refresh categories
+  } catch (err) {
+    console.error("Error adding category:", err.message);
+    setError("Failed to add category.");
+  }
+};
+
+
+
 
   const handleMenuChange = (e) => {
     const { name, value, files } = e.target;
@@ -276,50 +304,173 @@ const AdminPage = () => {
       </Table>
 
       {/* MENU */}
-      <h3 className="mt-5">Manage Menu</h3>
-      <Form onSubmit={handleMenuSubmit} className="mb-4">
-        <Form.Control type="text" name="name" placeholder="Item Name" value={menuForm.name} onChange={handleMenuChange} required />
-        <Form.Control as="textarea" name="description" placeholder="Description" value={menuForm.description} onChange={handleMenuChange} className="mt-2" />
-        <Form.Control type="number" step="0.01" name="price" placeholder="Price" value={menuForm.price} onChange={handleMenuChange} required className="mt-2" />
-        <Form.Select name="category_id" value={menuForm.category_id} onChange={handleMenuChange} required className="mt-2">
-          <option value="">Select Category</option>
-          {menuCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-        </Form.Select>
-        <Form.Control type="file" name="image" onChange={handleMenuChange} className="mt-2" />
-        <Button type="submit" className="mt-3">{menuForm.id ? "Update Item" : "Add Item"}</Button>
-      </Form>
-      <Table striped bordered hover>
-        <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Category</th><th>Actions</th></tr></thead>
-        <tbody>
-          {menuItems.map(item => (
-            <tr key={item.id}>
-              <td>{item.image_url && <img src={`${API_URL}${item.image_url}`} alt={item.name} width="80" />}</td>
-              <td>{item.name}</td>
-              <td>KES {item.price}</td>
-              <td>{item.category_name}</td>
-              <td>
-                <Button variant="warning" size="sm" onClick={() => setMenuForm(item)}>Edit</Button>{" "}
-                <Button variant="danger" size="sm" onClick={() => handleDeleteMenu(item.id)}>Delete</Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+<h3 className="mt-5">Manage Menu</h3>
+
+{/* Menu Form */}
+<Form onSubmit={handleMenuSubmit} className="mb-4">
+  {/* Name */}
+  <Form.Control
+    type="text"
+    name="name"
+    placeholder="Item Name"
+    value={menuForm.name}
+    onChange={handleMenuChange}
+    required
+  />
+
+  {/* Description */}
+  <Form.Control
+    as="textarea"
+    name="description"
+    placeholder="Description"
+    value={menuForm.description}
+    onChange={handleMenuChange}
+    className="mt-2"
+  />
+
+  {/* Price */}
+  <Form.Control
+    type="number"
+    step="0.01"
+    name="price"
+    placeholder="Price"
+    value={menuForm.price}
+    onChange={handleMenuChange}
+    required
+    className="mt-2"
+  />
+
+  {/* Category Select */}
+  <Form.Group className="mt-2">
+    <Form.Label>Category</Form.Label>
+    <Form.Select
+      name="category_id"
+      value={menuForm.category_id}
+      onChange={(e) => {
+        if (e.target.value === "new") {
+          setShowCategoryForm(true);
+        } else {
+          handleMenuChange(e);
+        }
+      }}
+      required
+    >
+      <option value="">-- Select Category --</option>
+      {menuCategories.map((cat) => (
+        <option key={cat.id} value={cat.id}>
+          {cat.name}
+        </option>
+      ))}
+      <option value="new">➕ Add New Category</option>
+    </Form.Select>
+  </Form.Group>
+
+  {/* Inline Add Category Form */}
+  {showCategoryForm && (
+    <Form onSubmit={handleAddCategory} className="mb-2 d-flex mt-2">
+      <Form.Control
+        type="text"
+        placeholder="New category name"
+        value={newCategory}
+        onChange={(e) => setNewCategory(e.target.value)}
+        className="me-2"
+        required
+      />
+      <Button type="submit" variant="success">
+        Save
+      </Button>
+      <Button
+        variant="secondary"
+        className="ms-2"
+        onClick={() => setShowCategoryForm(false)}
+      >
+        Cancel
+      </Button>
+    </Form>
+  )}
+
+  {/* Image Upload */}
+  <Form.Control
+    type="file"
+    name="image"
+    onChange={handleMenuChange}
+    className="mt-2"
+  />
+
+  {/* Submit */}
+  <Button type="submit" className="mt-3">
+    {menuForm.id ? "Update Item" : "Add Item"}
+  </Button>
+</Form>
+
+{/* Menu Table */}
+<Table striped bordered hover responsive>
+  <thead>
+    <tr>
+      <th>Image</th>
+      <th>Name</th>
+      <th>Price</th>
+      <th>Category</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {menuItems.map((item) => (
+      <tr key={item.id}>
+        <td>
+          {item.image_url && (
+            <img
+              src={`${API_URL}${item.image_url}`}
+              alt={item.name}
+              width="80"
+              style={{ borderRadius: "6px" }}
+            />
+          )}
+        </td>
+        <td>{item.name}</td>
+        <td>KES {item.price}</td>
+        <td style={{ fontWeight: "500", color: "#555" }}>
+          {item.category_name || (
+            <span style={{ color: "#999" }}>Uncategorized</span>
+          )}
+        </td>
+        <td>
+          <Button
+            variant="warning"
+            size="sm"
+            onClick={() => setMenuForm(item)}
+          >
+            Edit
+          </Button>{" "}
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleDeleteMenu(item.id)}
+          >
+            Delete
+          </Button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</Table>
+
 
       {/* REVIEWS */}
       <h3>Sort & Respond to Reviews</h3>
       <Table striped bordered hover>
         <thead><tr><th>Review</th><th>Action</th></tr></thead>
         <tbody>
-          {reviews.map((review) => (
-            <tr key={review.id}>
-              <td>{review.text}</td>
-              <td>
-                <Button variant="primary" className="me-2">Approve</Button>
-                <Button variant="warning">Reject</Button>
-              </td>
-            </tr>
-          ))}
+          {Array.isArray(reviews) && reviews.map((review) => (
+  <tr key={review.id}>
+    <td>{review.text}</td>
+    <td>
+      <Button variant="primary" className="me-2">Approve</Button>
+      <Button variant="warning">Reject</Button>
+    </td>
+  </tr>
+))}
+
         </tbody>
       </Table>
 
