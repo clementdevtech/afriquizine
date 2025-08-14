@@ -2,8 +2,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {pool, db} = require("../db");
 const crypto = require("crypto");
+const cron = require("node-cron");
 //const rateLimit = require('express-rate-limit');
-const { sendVerificationEmail, sendPasswordRecoveryEmail } = require("./emailController");
+const { sendPasswordRecoveryEmail } = require("./emailController");
 require("dotenv").config();
 
 const generateToken = (user) => {
@@ -60,53 +61,47 @@ const register = async (req, res) => {
   try {
     let { email, name, password } = req.body;
 
-    // ====== 1. Basic validations ======
     if (!email || !name || !password) {
       return res.status(400).json({ message: "Email, username, and password are required" });
     }
+
     email = email.trim().toLowerCase();
     name = name.trim();
-
-    if (typeof password !== "string" || !password.trim()) {
-      return res.status(400).json({ message: "Invalid password" });
-    }
 
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters long" });
     }
 
-    // ====== 2. Check if user exists ======
+    // Check if email/username exists in pending or main table
+    const existingPending = await db("pending_users")
+      .where("email", email)
+      .orWhere("username", name)
+      .first();
+
     const existingUser = await db("users")
       .where("email", email)
       .orWhere("username", name)
       .first();
 
-    if (existingUser) {
+    if (existingPending || existingUser) {
       return res.status(400).json({ message: "Email or Username already exists" });
     }
 
-    // ====== 3. Hash password ======
-    console.log("Raw password to hash:", password);
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (!hashedPassword.startsWith("$2a$") && !hashedPassword.startsWith("$2b$")) {
-      throw new Error("Password hashing failed");
-    }
-    console.log("Generated hash:", hashedPassword);
-
-    // ====== 4. Insert user ======
-    const [newUser] = await db("users")
+    // Save to pending_users
+    const [newPendingUser] = await db("pending_users")
       .insert({
         email,
         username: name,
-        password: hashedPassword,
-        verified: false,
+        password: hashedPassword, // hashed password saved
       })
       .returning(["id", "email", "username"]);
 
     return res.status(201).json({
-      message: "User registered successfully. Proceed to verification.",
-      user: newUser,
+      message: "Registration successful. Please verify your email within 7 days.",
+      user: newPendingUser,
     });
 
   } catch (error) {
@@ -250,5 +245,12 @@ const ResetPassword = async (req, res) => {
   }
 };
 
+// Run every night at midnight
+cron.schedule("0 0 * * *", async () => {
+  const deleted = await db("pending_users")
+    .whereRaw("created_at < NOW() - INTERVAL '7 days'")
+    .del();
+  console.log(`Auto-deleted ${deleted} expired pending users`);
+});
 
 module.exports = { register, check_user, login, logout, forgotPassword, ResetPassword };

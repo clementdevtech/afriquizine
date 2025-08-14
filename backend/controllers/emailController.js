@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-const { pool } = require("../db");
+const { db, pool} = require("../db");
 const crypto = require("crypto");
 require("dotenv").config();
 
@@ -126,36 +126,132 @@ const sendVerificationEmail = async (req, res) => {
 // Verify email with token or code
 const verifyEmail = async (req, res) => {
   const { token, email, code } = req.body;
+  console.log("📩 Incoming verify request:", { email, token: !!token, code: !!code });
+
   if (!email || (!token && !code)) {
+    console.warn("⚠️ Missing verification details.");
     return res.status(400).json({ message: "Missing verification details." });
   }
 
   try {
-    let query = "";
-    let param = "";
-    if (token) {
-      const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-      query = "SELECT * FROM email_verifications WHERE token=$1 AND email=$2 AND expires_at > NOW()";
-      param = hashedToken;
-    } else {
-      query = "SELECT * FROM email_verifications WHERE code=$1 AND email=$2 AND expires_at > NOW()";
-      param = code;
-    }
+    await db.transaction(async (trx) => {
+      // 1) find verification record (token or code) that hasn't expired
+      let verification;
+      if (token) {
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        console.log("🔑 Hashed token:", hashedToken);
+        verification = await trx("email_verifications")
+          .where({ token: hashedToken, email })
+          .andWhere("expires_at", ">", db.fn.now())
+          .first();
+      } else {
+        console.log("🔍 Verifying via code:", code);
+        verification = await trx("email_verifications")
+          .where({ code, email })
+          .andWhere("expires_at", ">", db.fn.now())
+          .first();
+      }
 
-    const result = await pool.query(query, [param, email]);
-    if (result.rows.length === 0) {
-      return res.status(400).json({ message: "Invalid or expired token/code." });
-    }
+      if (!verification) {
+        console.warn("❌ No matching verification record found");
+        // nothing to commit — rollback by throwing or simply return from transaction callback
+        // we return outside the transaction by throwing a controlled error
+        const err = new Error("Invalid or expired token/code.");
+        err.status = 400;
+        throw err;
+      }
+      console.log("✅ Verification record found:", verification);
 
-    await pool.query("UPDATE users SET verified=true WHERE email=$1", [email]);
-    await pool.query("DELETE FROM email_verifications WHERE email=$1", [email]);
+      // 2) fetch pending user and existing main user inside same transaction
+      const pendingUser = await trx("pending_users").where({ email }).first();
+      const existingUser = await trx("users").where({ email }).first();
 
-    res.json({ message: "Email verified successfully!", redirect: "/login" });
+      console.log("📂 Pending user record:", pendingUser);
+      console.log("👤 Existing user record:", existingUser ? { id: existingUser.id, email: existingUser.email } : null);
+
+      // 3) If user already exists in users table -> just mark verified (merge) & cleanup
+      if (existingUser) {
+  console.log("ℹ️ User already exists in users table, ensuring verified=true and syncing password if missing.");
+
+  const pendingPasswordRow = await trx("pending_users").where({ email }).first();
+
+  // If password missing or blank in users, and we have one in pending_users, update it
+  if ((!existingUser.password || existingUser.password.trim() === "") && pendingPasswordRow?.password) {
+    console.log("🔄 Updating missing password from pending_users.");
+    await trx("users")
+      .where({ email })
+      .update({
+        password: pendingPasswordRow.password,
+        verified: true,
+      });
+  } else {
+    await trx("users").where({ email }).update({ verified: true });
+  }
+
+  // cleanup pending + verification rows
+  await trx("pending_users").where({ email }).del();
+  await trx("email_verifications").where({ email }).del();
+
+  return res.json({ message: "Email already verified. You can log in now." });
+}
+
+
+      // 4) if pending user missing -> error
+      if (!pendingUser) {
+        console.warn("❌ No pending user found for email:", email);
+        const err = new Error("Pending user not found or already verified.");
+        err.status = 404;
+        throw err;
+      }
+
+      // 5) make sure pendingUser has password preserved
+      if (!pendingUser.password || pendingUser.password.trim() === "") {
+        console.error("🚨 Pending user password missing for email:", email, pendingUser);
+        const err = new Error("Pending user has no password saved.");
+        err.status = 500;
+        throw err;
+      }
+
+      // 6) Move pending user into users table safely (insert or merge verified flag if race)
+      const insertObj = {
+        email: pendingUser.email,
+        username: pendingUser.username,
+        password: pendingUser.password, // hashed password preserved
+        verified: true,
+        created_at: new Date(),
+      };
+
+      // Use ON CONFLICT ... DO UPDATE to avoid duplicate key crash if race occurs
+      // (Knex's onConflict().merge(...) will update only the specified fields)
+      const inserted = await trx("users")
+        .insert(insertObj)
+        .onConflict("email")
+        .merge({ verified: true }) // if user was inserted concurrently, just ensure verified true
+        .returning(["id", "email"]);
+
+      console.log("⬆️ Inserted / merged user:", inserted);
+
+      // 7) cleanup pending and verification records
+      await trx("pending_users").where({ email }).del();
+      await trx("email_verifications").where({ email }).del();
+
+      console.log("🧹 Cleanup completed for email:", email);
+
+      // commit will happen automatically if we reach this point (no throw). send response:
+      return res.json({ message: "Email verified successfully!", redirect: "/login" });
+    });
   } catch (err) {
-    console.error(`Error verifying email: ${err.message}`);
-    res.status(500).json({ message: "Error verifying email." });
+    // If we threw a controlled error with status, use it
+    if (err && err.status) {
+      console.warn("Handled error in verifyEmail:", err.message);
+      return res.status(err.status).json({ message: err.message });
+    }
+
+    console.error(`💥 Error verifying email: ${err.message}`, err);
+    return res.status(500).json({ message: "Error verifying email." });
   }
 };
+
 
 // Send password reset email
 const sendPasswordRecoveryEmail = async (email) => {
