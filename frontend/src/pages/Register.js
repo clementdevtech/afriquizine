@@ -94,7 +94,7 @@ const Register = () => {
         code: user.code,
       });
       alert(res.data.message);
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Verification failed");
     }
@@ -104,7 +104,12 @@ const Register = () => {
     e.preventDefault();
     if (validateStep()) {
       try {
-        const res = await axios.post(`${API_URL}/auth/register`, user);
+    const res =await axios.post(`${API_URL}/auth/register`, {
+            email: user.email.trim(),
+            name: user.name.trim(),
+            password: user.password
+            });
+
         alert(res.data.message);
         navigate("/email-verification");
       } catch (err) {

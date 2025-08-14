@@ -26,7 +26,11 @@ const Login = () => {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, user);
+  const res = await axios.post(`${API_URL}/auth/login`, {
+          email: user.email.trim(),
+          password: user.password
+          });
+
       localStorage.setItem("token", res.data.token);
       alert(res.data.message);
 

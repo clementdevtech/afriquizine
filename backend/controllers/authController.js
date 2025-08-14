@@ -14,43 +14,90 @@ const generateToken = (user) => {
   );
 };
 
-const register = async (req, res) => {
-  const { email, name, password } = req.body;
-
+const check_user = async (req, res) => {
   try {
-    // Basic validations
+    let { email, name } = req.body;
+
+    if (!email || !name) {
+      return res.status(400).json({ message: "Email and username are required" });
+    }
+
+    email = email.trim().toLowerCase();
+    name = name.trim();
+
+    // Query the database for matching email OR username
+    const user = await db("users")
+      .where("email", email)
+      .orWhere("username", name)
+      .first();
+
+    if (user) {
+      // Exact matches for both
+      if (user.email === email && user.username === name) {
+        return res.status(409).json({ message: "Email and Username already exist" });
+      }
+      // Only email matches
+      if (user.email === email) {
+        return res.status(409).json({ message: "Email already exists" });
+      }
+      // Only username matches
+      if (user.username === name) {
+        return res.status(409).json({ message: "Username already exists" });
+      }
+    }
+
+    // If no match found
+    return res.json({ exists: false });
+
+  } catch (error) {
+    console.error("Error checking user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+const register = async (req, res) => {
+  try {
+    let { email, name, password } = req.body;
+
+    // ====== 1. Basic validations ======
     if (!email || !name || !password) {
       return res.status(400).json({ message: "Email, username, and password are required" });
+    }
+    email = email.trim().toLowerCase();
+    name = name.trim();
+
+    if (typeof password !== "string" || !password.trim()) {
+      return res.status(400).json({ message: "Invalid password" });
     }
 
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters long" });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-
-    // Check if email or username exists
+    // ====== 2. Check if user exists ======
     const existingUser = await db("users")
-      .where("email", normalizedEmail)
+      .where("email", email)
       .orWhere("username", name)
       .first();
 
     if (existingUser) {
-      return res.status(400).json({
-        message: "Email or Username already exists",
-      });
+      return res.status(400).json({ message: "Email or Username already exists" });
     }
 
-    // Always hash the password securely
+    // ====== 3. Hash password ======
+    console.log("Raw password to hash:", password);
     const hashedPassword = await bcrypt.hash(password, 10);
+
     if (!hashedPassword.startsWith("$2a$") && !hashedPassword.startsWith("$2b$")) {
       throw new Error("Password hashing failed");
     }
+    console.log("Generated hash:", hashedPassword);
 
-    // Insert new user (set verified to false initially)
+    // ====== 4. Insert user ======
     const [newUser] = await db("users")
       .insert({
-        email: normalizedEmail,
+        email,
         username: name,
         password: hashedPassword,
         verified: false,
@@ -68,39 +115,6 @@ const register = async (req, res) => {
   }
 };
 
-
-const check_user = async (req, res) => {
- 
-  try {
-    const { email, name } = req.body;
-    //console.log("checking:", email, name);
-
-    if (!email || !name) {
-      return res.status(400).json({ message: "Email and username are required" });
-    }
-
-    // Query the database to check if email or username already exists
-    const user = await db("users")
-      .where("email", email)
-      .orWhere("username", name)
-      .first();
-
-    if (user) {
-      if (user.email === email && user.name === name) {
-        return res.status(409).json({ message: "Email and Username already exist" });
-      } else if (user.email === email) {
-        return res.status(409).json({ message: "Email already exists" });
-      } else {
-        return res.status(409).json({ message: "Username already exists" });
-      }
-    }
-
-    res.json({ exists: false });
-  } catch (error) {
-    console.error("Error checking user:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
 /*
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
@@ -111,34 +125,36 @@ const loginLimiter = rateLimit({
 
 //................Login route
 const login = async (req, res) => {
-  const { email, password } = req.body;
-  //console.log("login:", email);
-
-  if (!email || !password) {
-    console.error("Login Error: Missing email or password");
-    return res.status(400).json({ message: "Please provide email and password" });
-  }
-
   try {
+    let { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please provide email and password" });
+    }
+    email = email.trim().toLowerCase();
+
+    if (typeof password !== "string" || !password.trim()) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
+    // ====== 1. Find user ======
     const user = await db("users").where("email", email).first();
     if (!user) {
-      console.error("Login Error: Email not found");
       return res.status(404).json({ message: "Email not found" });
     }
 
-    // Debug: Log stored hash and bcrypt result
+    // ====== 2. Compare password ======
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     console.log("Password match:", isPasswordValid);
 
     if (!isPasswordValid) {
-      console.error("Login Error: Invalid password");
-      return res.status(401).json({ message: "Invalid password" }); // Changed to "message"
+      return res.status(401).json({ message: "Invalid password" });
     }
 
+    // ====== 3. Create token ======
     const { password: _, ...userWithoutPassword } = user;
-    const token = jwt.sign(userWithoutPassword, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(userWithoutPassword, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -146,18 +162,18 @@ const login = async (req, res) => {
       sameSite: "Lax",
     });
 
-    console.log("Generated Token:", token);
-
     return res.status(200).json({
       success: true,
-      message: "Login successful", // Matches frontend
-      token: token, 
+      message: "Login successful",
+      token,
     });
+
   } catch (error) {
     console.error("Error in login:", error.message);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 
 const logout = (req, res) => {
@@ -169,16 +185,19 @@ const logout = (req, res) => {
 
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
+  const normalizedEmail = email.trim().toLowerCase();
+
+
   if (!email) {
     return res.status(400).json({ message: "Email is required." });
   }
   try {
 
-  const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  const user = await pool.query("SELECT * FROM users WHERE email = $1", [normalizedEmail]);
     if (user.rows.length === 0) {
       return res.status(404).json({ message: "User not found." });
     }
-    const response = await sendPasswordRecoveryEmail(email);
+    const response = await sendPasswordRecoveryEmail(normalizedEmail);
     if (response.error) {
       return res.status(400).json({ message: response.error });
     }
