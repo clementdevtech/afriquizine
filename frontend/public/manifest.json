@@ -1,6 +1,6 @@
 {
-  "short_name": "savoury kitchens",
-  "name": "savoury kitchens: catering, event decoration, public address, and event planning services",
+  "short_name": "Afrikuizine",
+  "name": "Afriquizines Delights where we combine culinary excellence with seamless event planning to create unforgettable moments",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,12 +8,12 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo.png",
+      "src": "logo-192x192.png",
       "type": "image/png",
-      "sizes": "129x125"
+      "sizes": "192x192"
     },
     {
-      "src": "logo.png",
+      "src": "logo-512x512.png",
       "type": "image/png",
       "sizes": "512x512"
     }

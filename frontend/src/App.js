@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -19,13 +19,11 @@ import AboutUs from "./pages/AboutUs";
 import ProtectedRoute from "./components/ProtectedRoute";  
 import Unauthorized from "./pages/Unauthorized"; 
 import ResetPassword from "./pages/ResetPassword"; 
-
-
+import LoadingScreen from './components/LoadingScreen';
 
 function AppContent() {
   const location = useLocation();
 
-  // Pages where Navbar & Footer should be hidden
   const hideLayoutOn = [
     "/register",
     "/login",
@@ -59,7 +57,6 @@ function AppContent() {
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected Admin Route */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/admin" element={<AdminPage />} />
         </Route>
@@ -70,9 +67,16 @@ function AppContent() {
 }
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <Router>
-      <AppContent />
+      {loading ? <LoadingScreen /> : <AppContent />}
     </Router>
   );
 }

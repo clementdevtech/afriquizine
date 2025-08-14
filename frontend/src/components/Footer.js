@@ -15,13 +15,13 @@ const Footer = () => {
         </div>
 
         <div className="social-links mt-2">
-          <a href="https://www.facebook.com/profile.php?id=61572956517590" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.facebook.com/profile.php?id=61579648372186" target="_blank" rel="noopener noreferrer">
             <FaFacebook size={24} />
           </a>
-          <a href="https://www.instagram.com/savourykitchens1/" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.instagram.com/afrikuizine_delights?igsh=dHh3dm9udHczcmdr" target="_blank" rel="noopener noreferrer">
             <FaInstagram size={24} />
           </a>
-          <a href="https://www.tiktok.com/@savourykitchens1" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.tiktok.com/@afrikuizine.delig?_t=ZM-8yrZSabwM5g&_r=1" target="_blank" rel="noopener noreferrer">
             <FaTiktok size={24} />
           </a>
         </div>

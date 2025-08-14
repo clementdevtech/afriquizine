@@ -36,12 +36,12 @@ const BookingPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios.post(`${API_URL}/bookings`, formData)
+    axios.post(`${API_URL}/booking`, formData)
       .then(() => {
         alert('Booking successful!');
 
         // ✅ Mark selected date as booked in the database
-        axios.put(`${API_URL}/admin/book-date`, { date: formData.date })
+        axios.put(`${API_URL}/book-date`, { date: formData.date })
           .then(() => {
             setAvailableDates(availableDates.filter(d => d !== formData.date));
           })

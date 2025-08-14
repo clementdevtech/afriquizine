@@ -4,7 +4,7 @@ require("dotenv").config();
 // Get Availability
 const getAvailability = async (req, res) => {
   try {
-    console.log('Fetching available dates for the next month...');
+    //console.log('Fetching available dates for the next month...');
 
     const today = new Date();
     const nextMonth = new Date();

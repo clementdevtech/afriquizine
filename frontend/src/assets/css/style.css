@@ -13,7 +13,7 @@ body {
 
 /* Hero Section */
 .hero {
-  background: url('../images/background.jpeg') no-repeat center;
+  background: url('../images/event.png') no-repeat center;
   background-size: cover;
   color: white;
   text-align: center;

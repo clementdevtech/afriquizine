@@ -5,7 +5,7 @@ const getTestimonials = async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const limit = parseInt(req.query.limit) || 3;
 
-  console.log(offset, limit)
+  //console.log(offset, limit)
 
   try {
     const query = `

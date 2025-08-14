@@ -1,4 +1,5 @@
 const { pool } = require("../db");
+const { sendEmail } = require("./emailController");
 
 require("dotenv").config();
 

@@ -73,7 +73,7 @@ const check_user = async (req, res) => {
  
   try {
     const { email, name } = req.body;
-    console.log("checking:", email, name);
+    //console.log("checking:", email, name);
 
     if (!email || !name) {
       return res.status(400).json({ message: "Email and username are required" });
@@ -112,7 +112,7 @@ const loginLimiter = rateLimit({
 //................Login route
 const login = async (req, res) => {
   const { email, password } = req.body;
-  console.log("login:", email);
+  //console.log("login:", email);
 
   if (!email || !password) {
     console.error("Login Error: Missing email or password");

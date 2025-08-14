@@ -7,7 +7,7 @@ const AboutUs = () => {
     <div className="container about-container">
       <h1 className="about-title">About Us</h1>
       <p className="about-intro">
-        Welcome to <strong>Afriquizine Delights</strong>, where we combine culinary excellence with
+        Welcome to <strong>Afrikuizine Delights</strong>, where we combine culinary excellence with
         seamless event planning to create unforgettable moments.
       </p>
 
@@ -36,7 +36,7 @@ const AboutUs = () => {
           📍 <strong>Adelaide, Australia</strong> — providing premium catering and equipment hire for all occasions.
         </p>
         <p>
-          📍 <strong>Nairobi, Kenya</strong> — delivering top-tier catering and event services.
+          📍 <strong>Kitale, Kenya</strong> — delivering top-tier catering and event services.
         </p>
       </section>
 

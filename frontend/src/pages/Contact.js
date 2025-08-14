@@ -7,7 +7,8 @@ const Contact = () => {
     email: 'afriquizines@gmail.com',
     phoneAustralia: '+61 404 450 433',
     phoneKenya: '+254 704 064 441',
-    addressAustralia: 'Adelaide, Australia'
+    addressAustralia: 'Adelaide, Australia',
+    addressKenya: 'Kitale, Kenya'
   };
 
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -57,6 +58,7 @@ const Contact = () => {
                 <div>
                   <h5>Address</h5>
                   <p>Australia: {contact.addressAustralia}</p>
+                  <p>Kenya: {contact.addressKenya}</p>
                 </div>
               </div>
             </div>
