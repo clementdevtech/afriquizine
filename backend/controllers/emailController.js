@@ -84,13 +84,6 @@ const sendVerificationEmail = async (req, res) => {
   }
 
   try {
-    const userCheck = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
-    if (userCheck.rows.length === 0) {
-      await pool.query(
-        `INSERT INTO users (email, username, password, verified) VALUES ($1, $2, $3, false)`,
-        [email, email.split("@")[0], ""]
-      );
-    }
 
     const verificationToken = crypto.randomUUID();
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -173,7 +166,21 @@ const verifyEmail = async (req, res) => {
       if (existingUser) {
   console.log("ℹ️ User already exists in users table, ensuring verified=true and syncing password if missing.");
 
-  const pendingPasswordRow = await trx("pending_users").where({ email }).first();
+  const insertObj = {
+      email: pendingUser.email,
+      username: pendingUser.username,
+      password: pendingUser.password,
+      verified: true,
+      created_at: new Date(),
+     };
+  await trx("users")
+     .insert(insertObj)
+     .onConflict("email")
+     .merge({ 
+        password: pendingUser.password,
+        verified: true 
+     });
+
 
   // If password missing or blank in users, and we have one in pending_users, update it
   if ((!existingUser.password || existingUser.password.trim() === "") && pendingPasswordRow?.password) {
