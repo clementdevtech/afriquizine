@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { FaUtensils,  FaBirthdayCake, FaTruck, FaStore } from 'react-icons/fa';
-import { GiCookingPot, GiBabyBottle } from 'react-icons/gi';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { FaUtensils, FaBirthdayCake, FaTruck, FaStore } from "react-icons/fa";
+import { GiCookingPot, GiBabyBottle } from "react-icons/gi";
+import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_URL;
 const WHATSAPP_NUMBER = "+254704064441"; // Change to your main ordering WhatsApp number
@@ -12,10 +12,13 @@ const Services = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    axios.get(`${API_URL}/menu`)
+    axios
+      .get(`${API_URL}/menu`)
       .then((res) => {
         setMenuItems(res.data);
-        const uniqueCategories = [...new Set(res.data.map(item => item.category))];
+        const uniqueCategories = [
+          ...new Set(res.data.map((item) => item.category)),
+        ];
         setCategories(uniqueCategories);
       })
       .catch((err) => console.error("Error fetching menu:", err));
@@ -27,22 +30,29 @@ const Services = () => {
 
   const handleOrderNow = (item) => {
     const option = orderOptions[item.id] || "Pickup";
-    const message = `Hello Afriquize Delights, I would like to order:\n\n` +
-                    `*${item.name}*\n` +
-                    `Option: ${option}\n` +
-                    `Price: $${item.price}\n\n` +
-                    `Please confirm availability.`;
+    const message =
+      `Hello Afriquize Delights, I would like to order:\n\n` +
+      `*${item.name}*\n` +
+      `Option: ${option}\n` +
+      `Price: $${item.price}\n\n` +
+      `Please confirm availability.`;
+
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank");
+    window.open(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`,
+      "_blank"
+    );
   };
 
   return (
     <section className="container my-5">
       <h2 className="text-center mb-4">Our Services</h2>
       <p className="text-center mb-5">
-        <strong>Afriquize Delights</strong> proudly serves <strong>Adelaide, Australia</strong> and <strong>Nairobi, Kenya</strong>,
-        offering top-quality catering for weddings, pre-weddings, baby showers, funerals, birthdays,
-        engagement parties, staff events, and casual gatherings.
+        <strong>Afriquize Delights</strong> proudly serves{" "}
+        <strong>Adelaide, Australia</strong> and <strong>Nairobi, Kenya</strong>
+        , offering top-quality catering for weddings, pre-weddings, baby
+        showers, funerals, birthdays, engagement parties, staff events, and
+        casual gatherings.
       </p>
 
       {/* SERVICES GRID */}
@@ -51,7 +61,10 @@ const Services = () => {
           <div className="card p-4 shadow-sm h-100">
             <GiCookingPot size={40} className="text-primary mb-3" />
             <h5>Catering Equipment Hire</h5>
-            <p>Commercial cooking pots, chafing dishes, bain-maries, drink urns & more.</p>
+            <p>
+              Commercial cooking pots, chafing dishes, bain-maries, drink urns &
+              more.
+            </p>
           </div>
         </div>
         <div className="col-md-3">
@@ -84,22 +97,27 @@ const Services = () => {
           <h4 className="mb-3">{category}</h4>
           <div className="row g-4">
             {menuItems
-              .filter(item => item.category === category)
+              .filter((item) => item.category === category)
               .map((item) => (
                 <div className="col-md-4" key={item.id}>
                   <div className="card shadow-sm h-100">
                     {item.image && (
                       <img
-                        src={`/uploads/${item.image}`}
+                        src={`${API_URL}/uploads/${item.image}`}
                         className="card-img-top"
                         alt={item.name}
-                        style={{ height: '200px', objectFit: 'cover' }}
+                        style={{ height: "200px", objectFit: "cover" }}
+                        onError={(e) =>
+                          console.error("Image failed:", e.target.src)
+                        }
                       />
                     )}
                     <div className="card-body">
                       <h5>{item.name}</h5>
                       <p className="text-muted">{item.description}</p>
-                      <h6 className="text-success">${item.price.toFixed(2)}</h6>
+                      <h6 className="text-success">
+                        ${item.price.toFixed(2)}
+                      </h6>
 
                       <div className="mt-3">
                         <label className="me-3">
@@ -107,9 +125,11 @@ const Services = () => {
                             type="radio"
                             name={`option-${item.id}`}
                             value="Pickup"
-                            onChange={() => handleOptionChange(item.id, 'Pickup')}
-                            checked={orderOptions[item.id] === 'Pickup'}
-                          />{' '}
+                            onChange={() =>
+                              handleOptionChange(item.id, "Pickup")
+                            }
+                            checked={orderOptions[item.id] === "Pickup"}
+                          />{" "}
                           <FaStore className="text-primary" /> Pickup
                         </label>
 
@@ -118,9 +138,11 @@ const Services = () => {
                             type="radio"
                             name={`option-${item.id}`}
                             value="Delivery"
-                            onChange={() => handleOptionChange(item.id, 'Delivery')}
-                            checked={orderOptions[item.id] === 'Delivery'}
-                          />{' '}
+                            onChange={() =>
+                              handleOptionChange(item.id, "Delivery")
+                            }
+                            checked={orderOptions[item.id] === "Delivery"}
+                          />{" "}
                           <FaTruck className="text-warning" /> Delivery
                         </label>
                       </div>

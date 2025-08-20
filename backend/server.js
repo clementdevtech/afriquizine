@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const path = require('path');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,8 +33,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-// Serve static files
+// ✅ Serve static files (general public folder if needed)
 app.use(express.static('public'));
+
+// ✅ Serve uploaded files explicitly from backend/uploads
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Import Routes
 const galleryRoutes = require('./routes/galleryRoutes');
@@ -47,8 +52,6 @@ const availabilityRoutes = require("./routes/availabilityRoutes");
 const menuRoutes = require("./routes/menuRoutes");
 const menuCategoryRoutes = require("./routes/menuCategoryRoutes");
 
-
-
 // Use Routes
 app.use('/api/gallery', galleryRoutes);
 app.use("/api/email", emailRoutes);
@@ -61,5 +64,20 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/menu-categories", menuCategoryRoutes);
+
+// ✅ Keep Alive Pinger (prevents Render from idling)
+if (process.env.RENDER_EXTERNAL_URL) {
+  setInterval(() => {
+    axios
+      .get(process.env.RENDER_EXTERNAL_URL + "/api/health")
+      .then(() => console.log("🔄 Keep-alive ping sent"))
+      .catch(err => console.error("⚠️ Keep-alive ping failed", err.message));
+  }, 14 * 60 * 1000); // every 14 minutes (Render sleeps after 15m)
+}
+
+// ✅ Health Check Route
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "Server is alive 🚀" });
+});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

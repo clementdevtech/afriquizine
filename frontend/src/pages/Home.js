@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import "../assets/css/style.css";
 import BookingPage from "./Booking";
 import axios from "axios";
+
 const API_URL = process.env.REACT_APP_API_URL;
-console.log("API_URL:", process.env.REACT_APP_API_URL);
+console.log("API_URL:", API_URL);
 
 const Home = () => {
   const [reviews, setReviews] = useState([]);
@@ -75,37 +76,40 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Gallery Section */}
       <section id="gallery" className="container my-5">
         <h2 className="text-center mb-4">Gallery</h2>
         <div className="gallery-container">
-  {["Events", "Decorations", "Menu/Food"].map((category) => {
-    if (!images[category] || images[category].length === 0) return null;
-    const currentImage = images[category][currentIndexes[category]];
+          {["Events", "Decorations", "Menu/Food"].map((category) => {
+            if (!images[category] || images[category].length === 0) return null;
+            const currentImage = images[category][currentIndexes[category]];
 
-    return (
-      <div key={category} className="gallery-item text-center">
-        <img
-          src={`/uploads/${currentImage.image_url}`} 
-          alt={category}
-          className={`fade-in`}
-          onLoad={(e) => {
-            e.target.classList.remove("fade-out");
-            e.target.classList.add("fade-in");
-          }}
-          onError={(e) => console.error("Image load error:", e)}
-          style={{ cursor: "pointer" }}
-          onClick={() => handleCategoryClick(category)}
-        />
-        <div className="description mt-2">
+            return (
+              <div key={category} className="gallery-item text-center">
+                <img
+                  src={`${API_URL}/uploads/${currentImage.image_url}`}
+                  alt={category}
+                  className="fade-in"
+                  onLoad={(e) => {
+                    e.target.classList.remove("fade-out");
+                    e.target.classList.add("fade-in");
+                  }}
+                  onError={(e) =>
+                    console.error("Image load error:", e.target.src)
+                  }
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleCategoryClick(category)}
+                />
+                <div className="description mt-2">
                   <p className="text-primary">{category}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
-    );
-  })}
-</div>
-
       </section>
 
+      {/* Reviews Section */}
       <section className="reviews-section container mt-5">
         <h2 className="text-center">Customer Reviews</h2>
         <div className="review-list mt-3">
@@ -119,16 +123,24 @@ const Home = () => {
             <p className="text-center">No reviews yet.</p>
           )}
         </div>
-        <form className="mt-4" onSubmit={(e) => {
-          e.preventDefault();
-          axios
-            .post(`${API_URL}/testimonials/addtestimonial`, { text: newReview })
-            .then((response) => {
-              setReviews([...reviews, response.data]);
-              setNewReview("");
-            })
-            .catch((error) => console.error("Error submitting review:", error));
-        }}>
+
+        <form
+          className="mt-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            axios
+              .post(`${API_URL}/testimonials/addtestimonial`, {
+                text: newReview,
+              })
+              .then((response) => {
+                setReviews([...reviews, response.data]);
+                setNewReview("");
+              })
+              .catch((error) =>
+                console.error("Error submitting review:", error)
+              );
+          }}
+        >
           <textarea
             className="form-control"
             placeholder="Write a review..."
@@ -142,7 +154,7 @@ const Home = () => {
         </form>
       </section>
 
- 
+      {/* Booking Section */}
       <section className="booking-section mt-5">
         <BookingPage />
       </section>

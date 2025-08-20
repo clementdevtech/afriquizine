@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { Button, Table, Form, Spinner, Alert } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../assets/css/Admin.css";
 
@@ -19,6 +20,7 @@ const AdminPage = () => {
   const [error, setError] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   
 
 
@@ -294,14 +296,56 @@ const fetchReviews = useCallback(async () => {
           <tr><th>Image</th><th>Category</th><th>Actions</th></tr>
         </thead>
         <tbody>
-          {images.map((img) => (
-            <tr key={img.id}>
-              <td>{img.filename ? (<img src={`/uploads/${img.image_url}`} alt={img.category || "Gallery item"} width="100" />) : (<span>No Image</span>)}</td>
-              <td>{img.category}</td>
-              <td><Button variant="danger" onClick={() => handleDeleteImage(img.id)}>Delete</Button></td>
-            </tr>
-          ))}
-        </tbody>
+  {images.map((img) => (
+    <tr key={img.id}>
+      <td>
+        {img?.image_url ? (
+          <img
+            src={`${API_URL}/uploads/${img.image_url}`}
+            alt={img.category || "Gallery item"}
+            style={{ width: "100px", cursor: "pointer", borderRadius: "6px" }}
+            onClick={() => setPreviewImage(`${API_URL}/uploads/${img.image_url}`)}
+          />
+        ) : (
+          <span>No Image</span>
+        )}
+      </td>
+      <td>{img.category}</td>
+      <td>
+        <Button 
+          variant="danger" 
+          onClick={() => handleDeleteImage(img.id)}
+        >
+          Delete
+        </Button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+{/* Image Preview Modal */}
+<Modal
+  show={!!previewImage}
+  onHide={() => setPreviewImage(null)}
+  centered
+  size="lg"
+>
+  <Modal.Body className="text-center">
+    {previewImage && (
+      <img
+        src={previewImage}
+        alt="Preview"
+        style={{ maxWidth: "100%", maxHeight: "80vh", borderRadius: "6px" }}
+      />
+    )}
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setPreviewImage(null)}>
+      Close
+    </Button>
+  </Modal.Footer>
+</Modal>
+
       </Table>
 
       {/* MENU */}
@@ -421,12 +465,13 @@ const fetchReviews = useCallback(async () => {
         <td>
           {item.image_url && (
             <img
-              src={`/uploads/${item.image_url}`}
+              src={`${API_URL}/uploads/${item.image_url}`}
               alt={item.name}
               width="80"
               style={{ borderRadius: "6px" }}
-            />
-          )}
+           />
+        )}
+
         </td>
         <td>{item.name}</td>
         <td>KES {item.price}</td>

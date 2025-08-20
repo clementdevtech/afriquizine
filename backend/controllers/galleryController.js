@@ -3,103 +3,98 @@ const path = require("path");
 const fs = require("fs");
 const { pool } = require("../db");
 
-// Configure storage for uploaded images
-const uploadDir = path.join(__dirname, "../../frontend/public/uploads");
+// --- Config ---
+const uploadDir = path.resolve(__dirname, "uploads");
 
 // Ensure upload directory exists
 if (!fs.existsSync(uploadDir)) {
-  console.warn("⚠️ Upload directory does not exist, creating:", uploadDir);
   fs.mkdirSync(uploadDir, { recursive: true });
+  console.log("📂 Created uploads directory:", uploadDir);
 }
 
+// --- Multer Storage Config ---
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    console.log("📂 Saving file to:", uploadDir);
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const newName = Date.now() + path.extname(file.originalname);
-    console.log("📝 Generated filename:", newName);
-    cb(null, newName);
+  destination: (_, __, cb) => cb(null, uploadDir),
+  filename: (_, file, cb) => {
+    const filename = `${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, filename);
   },
 });
 
 const upload = multer({ storage });
 
-// --- Add Image ---
-const addImage = async (req, res) => {
-  console.log("📩 Incoming request to /api/gallery/add");
-  console.log("➡️ Body:", req.body);
-  console.log("➡️ File:", req.file);
+// --- Helpers ---
+const deleteFileIfExists = (filePath) => {
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+    console.log("🗑️ File deleted:", filePath);
+  } else {
+    console.warn("⚠️ File not found on disk:", filePath);
+  }
+};
 
+// --- Controllers ---
+
+// Add Image
+const addImage = async (req, res) => {
   try {
-    if (!req.file || !req.body.category) {
-      console.warn("⚠️ Missing file or category");
+    const { category } = req.body;
+    const file = req.file;
+
+    if (!file || !category) {
       return res.status(400).json({ message: "Image and category are required" });
     }
 
-    const { category } = req.body;
-    const filename = req.file.filename;
-
-    console.log("✅ Inserting into DB:", { filename, category });
-
+    const filename = file.filename;
     await pool.query(
       "INSERT INTO gallery (image_url, category) VALUES ($1, $2)",
       [filename, category]
     );
 
-    res.json({ message: "Image uploaded successfully!", filename });
+    res.json({ message: "✅ Image uploaded successfully!", filename });
   } catch (err) {
     console.error("❌ Error adding image:", err);
-    res.status(500).json({ message: "Error adding image", error: err.message });
+    res.status(500).json({ message: "Error adding image" });
   }
 };
 
-// --- Get Images ---
-const getImages = async (req, res) => {
-  console.log("📩 Fetching gallery images");
+// Get Images
+const getImages = async (_, res) => {
   try {
-    const images = await pool.query("SELECT * FROM gallery");
-    console.log("✅ Found images:", images.rows.length);
-    res.json(images.rows);
+    const { rows } = await pool.query("SELECT * FROM gallery ORDER BY id DESC");
+    res.json(rows);
   } catch (err) {
     console.error("❌ Error fetching gallery:", err);
-    res.status(500).json({ message: "Error fetching gallery", error: err.message });
+    res.status(500).json({ message: "Error fetching gallery" });
   }
 };
 
-// --- Delete Image ---
+// Delete Image
 const deleteImage = async (req, res) => {
   const { id } = req.params;
-  console.log("📩 Delete request for ID:", id);
 
   try {
-    const result = await pool.query("SELECT image_url FROM gallery WHERE id = $1", [id]);
-    if (result.rows.length === 0) {
-      console.warn("⚠️ No image found with ID:", id);
+    const { rows } = await pool.query(
+      "SELECT image_url FROM gallery WHERE id = $1",
+      [id]
+    );
+
+    if (rows.length === 0) {
       return res.status(404).json({ message: "Image not found" });
     }
 
-    const filename = result.rows[0].image_url;
+    const filename = rows[0].image_url;
     const filePath = path.join(uploadDir, filename);
-    console.log("🗑️ Deleting file:", filePath);
 
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log("✅ File deleted");
-    } else {
-      console.warn("⚠️ File not found on disk:", filePath);
-    }
+    deleteFileIfExists(filePath);
 
     await pool.query("DELETE FROM gallery WHERE id = $1", [id]);
-    console.log("✅ DB record deleted for ID:", id);
-
-    res.json({ message: "Image deleted successfully!" });
+    res.json({ message: "✅ Image deleted successfully!" });
   } catch (err) {
     console.error("❌ Error deleting image:", err);
-    res.status(500).json({ message: "Error deleting image", error: err.message });
+    res.status(500).json({ message: "Error deleting image" });
   }
 };
 
-// Export functions
-module.exports = { addImage, getImages, deleteImage, upload };
+// --- Exports ---
+module.exports = { upload, addImage, getImages, deleteImage };

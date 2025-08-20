@@ -48,7 +48,8 @@ const Gallery = () => {
           const newIndexes = { ...prevIndexes };
           Object.keys(groupedImages).forEach((cat) => {
             if (groupedImages[cat]?.length > 0) {
-              newIndexes[cat] = (prevIndexes[cat] + 1) % groupedImages[cat].length;
+              newIndexes[cat] =
+                (prevIndexes[cat] + 1) % groupedImages[cat].length;
             }
           });
           return newIndexes;
@@ -61,7 +62,9 @@ const Gallery = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="text-center">{category ? `${category} Gallery` : "Gallery"}</h2>
+      <h2 className="text-center">
+        {category ? `${category} Gallery` : "Gallery"}
+      </h2>
 
       <div className="gallery-container">
         {category ? (
@@ -69,11 +72,13 @@ const Gallery = () => {
             filteredImages.map((img) => (
               <div key={img.id} className="gallery-item text-center">
                 <img
-                  src={`/uploads/${img.image_url}`}
+                  src={`${API_URL}/uploads/${img.image_url}`}
                   alt={`Gallery ${img.id}`}
                   className="img-fluid rounded shadow fade-in"
                   onClick={() => setFullScreenImage(img.image_url)}
-                  onError={(e) => console.error("Image Load Error:", e.target.src)} // Debugging
+                  onError={(e) =>
+                    console.error("Image Load Error:", e.target.src)
+                  } // Debugging
                 />
               </div>
             ))
@@ -82,12 +87,13 @@ const Gallery = () => {
           )
         ) : (
           Object.keys(groupedImages).map((cat) => {
-            if (!groupedImages[cat] || groupedImages[cat].length === 0) return null;
+            if (!groupedImages[cat] || groupedImages[cat].length === 0)
+              return null;
             const currentImage = groupedImages[cat][currentIndexes[cat]];
             return (
               <div key={cat} className="gallery-item text-center">
                 <img
-                  src={`/uploads/${currentImage.image_url}`} 
+                  src={`${API_URL}/uploads/${currentImage.image_url}`}
                   alt={cat}
                   className="img-fluid rounded shadow fade-in"
                   style={{ cursor: "pointer" }}
@@ -104,8 +110,15 @@ const Gallery = () => {
 
       {/* Full-Screen Image Viewer */}
       {fullScreenImage && (
-        <div className="fullscreen-overlay" onClick={() => setFullScreenImage(null)}>
-          <img src={`/uploads/${fullScreenImage}`} alt="Full View" className="fullscreen-image" />
+        <div
+          className="fullscreen-overlay"
+          onClick={() => setFullScreenImage(null)}
+        >
+          <img
+            src={`${API_URL}/uploads/${fullScreenImage}`}
+            alt="Full View"
+            className="fullscreen-image"
+          />
         </div>
       )}
     </div>
