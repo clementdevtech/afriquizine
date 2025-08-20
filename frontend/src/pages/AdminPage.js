@@ -186,17 +186,20 @@ const fetchReviews = useCallback(async () => {
   }, []);
 
 
-  const handleAddCategory = async (e) => {
+const handleAddCategory = async (e) => {
   e.preventDefault();
   if (!newCategory.trim()) {
     alert("Category name cannot be empty.");
     return;
   }
   try {
-    await axios.post(`${API_URL}/menu-categories`, { name: newCategory });
-    alert("Category added successfully!");
+    const res = await axios.post(`${API_URL}/menu-categories`, { name: newCategory });
+    const addedCategory = res.data.category;
+    setMenuCategories((prev) => [...prev, addedCategory]); 
+    setMenuForm({ ...menuForm, category_id: addedCategory.id }); 
     setNewCategory("");
-    fetchMenuData(); // Refresh categories
+    setShowCategoryForm(false);
+    alert("Category added successfully!");
   } catch (err) {
     console.error("Error adding category:", err.message);
     setError("Failed to add category.");
