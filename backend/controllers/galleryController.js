@@ -1,73 +1,103 @@
 const multer = require("multer");
 const path = require("path");
-const {pool, db} = require("../db");
+const fs = require("fs");
+const { pool } = require("../db");
 
 // Configure storage for uploaded images
+const uploadDir = path.join(__dirname, "../../frontend/public/uploads");
+
+// Ensure upload directory exists
+if (!fs.existsSync(uploadDir)) {
+  console.warn("⚠️ Upload directory does not exist, creating:", uploadDir);
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../../frontend/public/uploads")); 
+    console.log("📂 Saving file to:", uploadDir);
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); 
+    const newName = Date.now() + path.extname(file.originalname);
+    console.log("📝 Generated filename:", newName);
+    cb(null, newName);
   },
 });
 
 const upload = multer({ storage });
 
+// --- Add Image ---
 const addImage = async (req, res) => {
-  const { category } = req.body;
-  const filename = req.file.filename;
-
-  if (!filename || !category) {
-    return res.status(400).json({ message: "Image and category are required" });
-  }
+  console.log("📩 Incoming request to /api/gallery/add");
+  console.log("➡️ Body:", req.body);
+  console.log("➡️ File:", req.file);
 
   try {
-    await pool.query("INSERT INTO gallery (image_url, category) VALUES ($1, $2)", [
-      filename,
-      category,
-    ]);
+    if (!req.file || !req.body.category) {
+      console.warn("⚠️ Missing file or category");
+      return res.status(400).json({ message: "Image and category are required" });
+    }
+
+    const { category } = req.body;
+    const filename = req.file.filename;
+
+    console.log("✅ Inserting into DB:", { filename, category });
+
+    await pool.query(
+      "INSERT INTO gallery (image_url, category) VALUES ($1, $2)",
+      [filename, category]
+    );
+
     res.json({ message: "Image uploaded successfully!", filename });
   } catch (err) {
-    console.error("Error adding image:", err.message);
-    res.status(500).json({ message: "Error adding image" });
+    console.error("❌ Error adding image:", err);
+    res.status(500).json({ message: "Error adding image", error: err.message });
   }
 };
 
-// Get all images
+// --- Get Images ---
 const getImages = async (req, res) => {
+  console.log("📩 Fetching gallery images");
   try {
     const images = await pool.query("SELECT * FROM gallery");
+    console.log("✅ Found images:", images.rows.length);
     res.json(images.rows);
   } catch (err) {
-    res.status(500).json({ message: "Error fetching gallery" });
+    console.error("❌ Error fetching gallery:", err);
+    res.status(500).json({ message: "Error fetching gallery", error: err.message });
   }
 };
 
-// Delete image
+// --- Delete Image ---
 const deleteImage = async (req, res) => {
   const { id } = req.params;
-  console.log("Deleting image with ID:", id);
+  console.log("📩 Delete request for ID:", id);
+
   try {
     const result = await pool.query("SELECT image_url FROM gallery WHERE id = $1", [id]);
     if (result.rows.length === 0) {
+      console.warn("⚠️ No image found with ID:", id);
       return res.status(404).json({ message: "Image not found" });
     }
 
     const filename = result.rows[0].image_url;
-    const filePath = path.join(__dirname, "../../frontend/public/uploads", filename);
+    const filePath = path.join(uploadDir, filename);
+    console.log("🗑️ Deleting file:", filePath);
 
-
-   
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
+      console.log("✅ File deleted");
+    } else {
+      console.warn("⚠️ File not found on disk:", filePath);
     }
 
     await pool.query("DELETE FROM gallery WHERE id = $1", [id]);
+    console.log("✅ DB record deleted for ID:", id);
+
     res.json({ message: "Image deleted successfully!" });
   } catch (err) {
-    console.error("Error deleting image:", err.message);
-    res.status(500).json({ message: "Error deleting image" });
+    console.error("❌ Error deleting image:", err);
+    res.status(500).json({ message: "Error deleting image", error: err.message });
   }
 };
 
