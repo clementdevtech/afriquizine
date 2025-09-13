@@ -5,7 +5,7 @@ import "../assets/css/style.css";
 const API_URL = process.env.REACT_APP_API_URL;
 
 const Gallery = () => {
-  const { category } = useParams(); // Get selected category from URL
+  const { category } = useParams();
   const [groupedImages, setGroupedImages] = useState({});
   const [filteredImages, setFilteredImages] = useState([]);
   const [currentIndexes, setCurrentIndexes] = useState({});
@@ -25,7 +25,6 @@ const Gallery = () => {
 
         setGroupedImages(imagesByCategory);
 
-        // If a category is selected, show only that category
         if (category && imagesByCategory[category]) {
           setFilteredImages(imagesByCategory[category]);
         } else {
@@ -66,11 +65,11 @@ const Gallery = () => {
         {category ? `${category} Gallery` : "Gallery"}
       </h2>
 
-      <div className="gallery-container">
+      <div className="gallery-container row mt-4">
         {category ? (
           filteredImages.length > 0 ? (
             filteredImages.map((img) => (
-              <div key={img.id} className="gallery-item text-center">
+              <div key={img.id} className="col-md-4 col-sm-6 mb-4 text-center">
                 <img
                   src={`${API_URL}/uploads/${img.image_url}`}
                   alt={`Gallery ${img.id}`}
@@ -78,7 +77,8 @@ const Gallery = () => {
                   onClick={() => setFullScreenImage(img.image_url)}
                   onError={(e) =>
                     console.error("Image Load Error:", e.target.src)
-                  } // Debugging
+                  }
+                  style={{ cursor: "pointer" }}
                 />
               </div>
             ))
@@ -91,7 +91,7 @@ const Gallery = () => {
               return null;
             const currentImage = groupedImages[cat][currentIndexes[cat]];
             return (
-              <div key={cat} className="gallery-item text-center">
+              <div key={cat} className="col-md-4 col-sm-6 mb-4 text-center">
                 <img
                   src={`${API_URL}/uploads/${currentImage.image_url}`}
                   alt={cat}

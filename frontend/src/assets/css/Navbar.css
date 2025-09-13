@@ -119,9 +119,14 @@ button {
   }
   .mobile-navbar {
     display: flex;
+    overflow-x: hidden;
   }
   .nav-center img {
-    height: 28px;
+    height: 25px;
+  }
+  .mobile-navbar a {
+    font-size: 0.3rem;
+    padding: 0.05rem 0.05rem;
   }
 }
 

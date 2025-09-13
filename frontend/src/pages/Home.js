@@ -20,7 +20,6 @@ const Home = () => {
       .then((response) => setReviews(response.data))
       .catch((error) => console.error("Error fetching reviews:", error));
 
-    // Fetch gallery images
     fetch(`${API_URL}/gallery/getimages`)
       .then((response) => response.json())
       .then((data) => {
@@ -66,42 +65,84 @@ const Home = () => {
 
   return (
     <>
-      <section className="hero">
-        <div className="screen text-center text-white">
+      {/* Hero Section */}
+      <section className="hero d-flex align-items-center justify-content-center text-center text-white">
+        <div className="overlay p-4">
           <h1>Welcome to Afrikuizine Delights</h1>
-          <p>
-            We provide top-tier catering, event decoration, public address, and
-            event planning services.
-          </p>
+          <p>Delicious African & International Cuisine for All Occasions</p>
         </div>
       </section>
 
       {/* Gallery Section */}
       <section id="gallery" className="container my-5">
         <h2 className="text-center mb-4">Gallery</h2>
-        <div className="gallery-container">
+        <div className="row">
           {["Events", "Decorations", "Menu/Food"].map((category) => {
             if (!images[category] || images[category].length === 0) return null;
-            const currentImage = images[category][currentIndexes[category]];
+
+            // Sanitize category string for HTML id
+            const safeId = `carousel-${category.replace(/[^a-zA-Z0-9-_]/g, "")}`;
 
             return (
-              <div key={category} className="gallery-item text-center">
-                <img
-                  src={`${API_URL}/uploads/${currentImage.image_url}`}
-                  alt={category}
-                  className="fade-in"
-                  onLoad={(e) => {
-                    e.target.classList.remove("fade-out");
-                    e.target.classList.add("fade-in");
-                  }}
-                  onError={(e) =>
-                    console.error("Image load error:", e.target.src)
-                  }
-                  style={{ cursor: "pointer" }}
-                  onClick={() => handleCategoryClick(category)}
-                />
-                <div className="description mt-2">
-                  <p className="text-primary">{category}</p>
+              <div key={category} className="col-md-4 mb-4">
+                <div
+                  id={safeId}
+                  className="carousel slide shadow rounded"
+                  data-bs-ride="carousel"
+                >
+                  <div className="carousel-inner">
+                    {images[category].map((img, index) => (
+                      <div
+                        key={index}
+                        className={`carousel-item ${
+                          index === currentIndexes[category] ? "active" : ""
+                        }`}
+                      >
+                        <img
+                          src={`${API_URL}/uploads/${img.image_url}`}
+                          className="d-block w-100"
+                          alt={category}
+                          style={{
+                            height: "250px",
+                            objectFit: "cover",
+                            borderRadius: "10px",
+                          }}
+                          onClick={() => handleCategoryClick(category)}
+                        />
+                        <div className="carousel-caption d-none d-md-block">
+                          <h5 className="bg-dark bg-opacity-50 p-2 rounded">
+                            {category}
+                          </h5>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Controls */}
+                  <button
+                    className="carousel-control-prev"
+                    type="button"
+                    data-bs-target={`#${safeId}`}
+                    data-bs-slide="prev"
+                  >
+                    <span
+                      className="carousel-control-prev-icon"
+                      aria-hidden="true"
+                    ></span>
+                    <span className="visually-hidden">Previous</span>
+                  </button>
+                  <button
+                    className="carousel-control-next"
+                    type="button"
+                    data-bs-target={`#${safeId}`}
+                    data-bs-slide="next"
+                  >
+                    <span
+                      className="carousel-control-next-icon"
+                      aria-hidden="true"
+                    ></span>
+                    <span className="visually-hidden">Next</span>
+                  </button>
                 </div>
               </div>
             );
@@ -115,7 +156,10 @@ const Home = () => {
         <div className="review-list mt-3">
           {reviews.length > 0 ? (
             reviews.map((review, index) => (
-              <div key={index} className="review p-3 mb-3 shadow-sm rounded">
+              <div
+                key={index}
+                className="review p-3 mb-3 shadow-sm rounded bg-light"
+              >
                 {review.text}
               </div>
             ))
